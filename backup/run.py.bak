@@ -1,0 +1,100 @@
+#!/usr/bin/env  python3.8
+
+import smtplib
+import socket
+import logging
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import COMMASPACE, formatdate
+from os.path import basename
+import time
+from config.check import *
+from config.get import *
+
+
+print('>>> Sendmail is running ... <<<')
+summail = get_linesum()
+print(f"Tong so: {summail} email")
+print('-'*30)
+print(' ')
+
+
+if __name__ == "__main__":
+    customers = get_customer_information('file/template/listmails.txt') #1
+    message_template = get_template('file/template/template.html')
+#    attachment = get_attachment('file/attachment/attachment.txt')
+#    attachment1 = get_attachment1('file/attachment/attachment1.txt')
+#    attachment = get_file()
+
+    logging.basicConfig(filename='log/send.log', format='%(asctime)s - %(filename)s:%(lineno)d\t %(message)s', level=logging.DEBUG, filemode='w') # filemode='w': ghi de log cu
+
+    smtp_info = {
+        'SMTP_ENCRYPT': 'tls',
+        'SMTP_ADDRESS': 'smtp.gmail.com',
+        'SMTP_PORT': 587,
+        'MAIL_LOGIN': 'hnpx1998vdung@gmail.com',
+        'MAIL_PASSWORD': '',
+    }
+
+    if smtp_info.get('SMTP_ENCRYPT', "tls"):
+        s = smtplib.SMTP(host=smtp_info.get('SMTP_ADDRESS'), port=smtp_info.get('SMTP_PORT'))
+        s.ehlo()
+        s.starttls()
+        s.ehlo()
+    else:
+        s = smtplib.SMTP_SSL(host=smtp_info.get('SMTP_ADDRESS'), port=smtp_info.get('SMTP_PORT'))
+        s.ehlo()
+
+    s.login(smtp_info.get('MAIL_LOGIN'), smtp_info.get('MAIL_PASSWORD'))
+
+    for customer in customers: #3
+        try:
+            time.sleep(5)
+            customer_name = customer.get('name').lower().title() #4
+            
+            msg = MIMEMultipart() #5
+            message = message_template.substitute(CUSTOMER_NAME=customer_name) #6
+            
+            msg['From'] = "VU HUU DUNG <{0}>".format(smtp_info.get('MAIL_LOGIN'))
+            msg['To'] = "{0} <{1}>".format(customer_name, customer.get('email'))
+            msg['Date'] = formatdate(localtime=True)
+            msg['Subject'] = "Chao {0}, ban nhan duoc 1 mail tu python".format(customer_name)
+
+            path ="file/attachment/"
+            listdir = os.listdir(path)
+            for f in listdir:
+                filename = f
+                attachment = open(f"{path}/{f}", "rb")
+                part = MIMEBase('application', 'octet-stream')
+                part.set_payload((attachment).read())
+                encoders.encode_base64(part)
+                part.add_header('Content-Disposition', "attachment; filename= %s" % filename)
+                msg.attach(part)
+
+#           msg.attach(get_file())
+            msg.attach(MIMEText(message, 'html')) #7
+            s.send_message(msg) #8
+            print("{1} | Send mail to >>> {0} <<< success".format(customer.get('email'), customer.get('id')))
+            del msg #9
+
+            logging.info("Success: Gui mail cho {0} thanh cong | {1}".format(customer.get('email'), customer.get('id')))
+
+        except (smtplib.SMTPException, smtplib.SMTPServerDisconnected, smtplib.SMTPResponseException, smtplib.SMTPSenderRefused, smtplib.SMTPRecipientsRefused, smtplib.SMTPDataError, smtplib.SMTPConnectError, smtplib.SMTPHeloError, smtplib.SMTPAuthenticationError) as e: #11
+            n = customer.get('id')
+            m = customer.get('email')
+            print(f"{n} | Error: Khong the gui mail toi  >> {m}. Chi tiet: {e}")
+            logging.debug("Error: Khong the gui mail toi  >> {2}. Chi tiet: {0} | {1}".format(e, customer.get('id'), customer.get('email')))
+    s.quit()
+
+logsuccess = get_logsuccess()
+logerror = get_logerror()
+
+print(' ')
+print('-'*30)
+
+print(f"Tong so: {summail} email")
+print(f"Da gui di: {logsuccess} email")
+print(f"Gui bi loi: {logerror} email")
+
+print('-'*30)
+print('>>> Everything is done! <<<')

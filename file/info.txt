@@ -1,0 +1,31 @@
+1. chu ky
+
+http://tcorp.vn/wp-content/uploads/2021/02/abc.jpg
+
+http://tcorp.vn/wp-content/uploads/2021/02/chuky.jpg
+
+https://www.google.com/settings/security/lesssecureapps
+
+2. convert
+
+https://wordtohtml.net/
+
+3. backup temp.html backup
+
+<html>
+        <body>
+                <p>Hi, ${CUSTOMER_NAME}<br>
+                        How are you?<br>
+                        <a href="http://www.realpython.com">Real Python</a>
+                        has many great tutorials.
+
+                        Đây là mail được gửi tự động từ python.
+                </p>
+        </body>
+</html>
+
+4. link exception
+
+https://cppsecrets.com/users/35921151071171099711411510411798104971095154534864103109971051084699111109/Exceptions-SMTPException.php
+
+https://erlerobotics.gitbooks.io/erle-robotics-python-gitbook-free/content/smtp/error_handling_and_conversation_debugging.html
